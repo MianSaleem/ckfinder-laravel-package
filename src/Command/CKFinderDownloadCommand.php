@@ -8,24 +8,13 @@ use Symfony\Component\HttpKernel\Kernel;
 
 class CKFinderDownloadCommand extends Command
 {
-    const LATEST_VERSION = '3.5.3';
-    const FALLBACK_VERSION = '3.5.1';
+    public const FALLBACK_VERSION = '3.5.1';
 
-    protected $name = 'ckfinder:download';
+    public const LATEST_VERSION = '3.5.3';
 
     protected $description = 'Downloads the CKFinder distribution package and extracts assets.';
 
-    /**
-     * Creates URL to CKFinder distribution package.
-     *
-     * @return string
-     */
-    protected function buildPackageUrl()
-    {
-        $packageVersion = Kernel::MAJOR_VERSION >= 5 ? self::LATEST_VERSION : self::FALLBACK_VERSION;
-
-        return "http://download.cksource.com/CKFinder/CKFinder%20for%20PHP/$packageVersion/ckfinder_php_$packageVersion.zip";
-    }
+    protected $name = 'ckfinder:download';
 
     /**
      * Handles command execution.
@@ -48,9 +37,8 @@ class CKFinderDownloadCommand extends Command
             return;
         }
 
-        if (file_exists($targetPublicPath.'/ckfinder/ckfinder.js')) {
-            $questionText =
-                'It looks like the CKFinder distribution package has already been installed. ' .
+        if (file_exists($targetPublicPath . '/ckfinder/ckfinder.js')) {
+            $questionText = 'It looks like the CKFinder distribution package has already been installed. ' .
                 "This command will overwrite the existing files.\nDo you want to proceed? [y/n]: ";
 
             if (!$this->confirm($questionText)) {
@@ -62,9 +50,8 @@ class CKFinderDownloadCommand extends Command
         $progressBar = null;
 
         $maxBytes = 0;
-        $ctx = stream_context_create([], [
-            'notification' =>
-                function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) use (&$maxBytes, &$progressBar) {
+        $ctx      = stream_context_create([], [
+            'notification' => function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) use (&$maxBytes, &$progressBar) {
                     switch ($notificationCode) {
                         case STREAM_NOTIFY_FILE_SIZE_IS:
                             $maxBytes = $bytesMax;
@@ -139,7 +126,18 @@ class CKFinderDownloadCommand extends Command
         $fs->deleteDirectory($targetPublicPath . '/ckfinder/core');
         $fs->deleteDirectory($targetPublicPath . '/ckfinder/userfiles');
 
-
         $this->info('Done. Happy coding!');
+    }
+
+    /**
+     * Creates URL to CKFinder distribution package.
+     *
+     * @return string
+     */
+    protected function buildPackageUrl()
+    {
+        $packageVersion = Kernel::MAJOR_VERSION >= 5 ? self::LATEST_VERSION : self::FALLBACK_VERSION;
+
+        return "http://download.cksource.com/CKFinder/CKFinder%20for%20PHP/$packageVersion/ckfinder_php_$packageVersion.zip";
     }
 }
